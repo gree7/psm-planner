@@ -1,0 +1,100 @@
+/*
+ *   Copyright 2005 Heriot-Watt University
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, refer to the original text at <www.gnu.org>.
+ */
+
+dot{
+  /* General lay-out options */
+  /* ----------------------- */
+
+  overlap: false
+  splines: true
+
+  /* Edge classes and priorities */
+  /* --------------------------- */
+
+  (.green | .greenslave).weight: 1 
+  (.red).weight: 2
+  (.blue).weight: 3
+  (.init | .black).weight: 4
+  (.tail).weight: 5
+  (.loop).weight: 6
+
+  --if -showred        { (.red).omit-this-element: dummy               }
+  --if -showblue       { (.blue).omit-this-element: dummy              }
+  --if -showgreen      { (.subst).omit-this-element: dummy             }
+  --if -showgreenslave { (.greenslave,.subst).omit-this-element: dummy }
+
+  /* Graphical styling: text and nodes */
+  /* --------------------------------- */
+
+  node.fontname: "Helvetica"
+  edge.fontname: "Helvetica"
+  edge.arrowhead: normal
+  edge.color: black
+  edge.dir: forward
+
+  (.pinode|.node): { shape: ellipse
+                     style: filled
+                     color: "#660000"
+                     fillcolor: "#eedddd" }
+  (.node): { label: ""  shape: circle  width: 0.3 }
+
+  (.pibox): { shape: box
+              style: filled
+              color: "#ddeeee"
+              fillcolor: "#ddeeee" }
+  (.loopnode): { shape: box
+                 style: filled
+                 color: "#f8f8a0"
+                 fillcolor: "#f8f8a0"
+                 put-legend-recipe: L }
+
+  (.root,.pinode | .root,.pibox): { fillcolor: magenta }
+  (.label,(...(!!!)...)): { fontcolor: red
+                            put-legend-recipe: C }
+
+  (.loopnode,(...(!!!)...) | .pinode,(...(!!!)...) | .pibox,(...(!!!)...)):
+        { color: red
+          put-legend-recipe: B }
+
+  (.nubox): { shape: box
+              style: solid
+              color: "#eeffdd" }
+
+  /* Graphical styling: arrows */
+  /* ------------------------- */
+
+  (.init).style: bold
+
+  (.loop).dir: both
+
+  (.red|.green|.greenslave): { swap-edge-ends: yes
+                               arrowhead: none
+                               arrowtail: open }
+
+  (.red): { color: red }
+
+  /* uncomment next line to make blue edges blue */
+  /* (.blue) : { color: blue } */
+
+  (.green | .greenslave ): { color: "#338800" }
+
+  (.subst): { shape: box
+              style: filled
+              fontcolor: "#006600"
+              color: "#338800"
+              fillcolor: "#eeffdd" }
+
+}

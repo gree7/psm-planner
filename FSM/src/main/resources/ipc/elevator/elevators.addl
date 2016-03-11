@@ -1,0 +1,4 @@
+(define (problem elevator)
+    (:domain elevator)
+    (:agentTypes slow-elevator fast-elevator)
+)

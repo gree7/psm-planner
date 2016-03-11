@@ -1,0 +1,4 @@
+(define (problem elevator)
+    (:domain floor-tile)
+    (:agentTypes robot)
+)

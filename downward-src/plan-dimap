@@ -1,0 +1,25 @@
+#! /bin/bash
+
+set -e
+
+BASEDIR="$(dirname "$0")"
+
+function die {
+    echo "$@" 1>&2
+    exit 1
+}
+
+function usage {
+    die "usage: $(basename "$0") DOMAIN_FILE PROBLEM_FILE"
+}
+
+if [[ "$#" != 2 ]]; then
+    usage
+fi
+
+DOMAIN=$1
+PROBLEM=$2
+SEARCH_OPTIONS="ipc dimap"
+
+"$BASEDIR/plan" $1 $2 $SEARCH_OPTIONS
+

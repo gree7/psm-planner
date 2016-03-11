@@ -1,0 +1,4 @@
+(define (problem sokoban)
+    (:domain sokoban-sequential)
+    (:agentTypes player)
+)

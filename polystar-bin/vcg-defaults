@@ -1,0 +1,118 @@
+/*
+ *   Copyright 2004 Heriot-Watt University
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, refer to the original text at <www.gnu.org>.
+ */
+
+vcg{
+  /* General lay-out options */
+  /* ----------------------- */
+
+  late_edge_labels: yes
+  port_sharing: no
+  arrowmode: free
+  layoutalgorithm: maxdepthslow
+  xspace: 25
+  yspace: 45
+  splines: yes
+
+   /* Edge classes and priorities */
+   /* --------------------------- */
+
+  (.init).priority: 3
+  (.black).priority: 3
+  (.blue).priority: 2
+  (.tail).priority: 5
+  (.green | .greenslave).priority: 1
+  (.red).priority: 4
+  (.loop).priority: 7
+
+  (.init).class: 1        classname 1: "Initial"
+  (.black).class: 2       classname 2: "Black"
+  (.blue).class: 3        classname 3: "Blue"
+  (.red).class: 4         classname 4: "Red"
+  (.green).class: 5       classname 5: "Master green"
+  (.greenslave).class: 6  classname 6: "Slave green"
+
+  /* Beware that the interpretation of the showblue, showred, showgreen,
+   * and showgreenslave options is hard-coded in vcgprint.
+   */
+
+  (.green).edgekind: backedge
+
+  /* Graphical styling: text and nodes */
+  /* --------------------------------- */
+
+  (.pinode|.node): { shape: ellipse
+                      bordercolor: darkred
+                      borderwidth: 1
+                      color: khaki }
+  (.node): { label: " "
+             width: 20
+             height: 20 }
+
+  (.pibox): { color: lightgray
+              bordercolor: lightgray
+              borderwidth: 1 }
+  (.loopnode): { color: yellow
+                 bordercolor: yellow
+                 put-legend-recipe: L }
+
+  (.root,.pinode | .root,.pibox): { color: magenta }
+  (.label,(...(!!!)...)): { textcolor: red
+                            put-legend-recipe: C }
+
+  (.loopnode,(...(!!!)...) | .pinode,(...(!!!)...) | .pibox,(...(!!!)...)):
+        { bordercolor: red
+          borderwidth: 3
+          put-legend-recipe: B }
+
+  (.nubox): { borderwidth: 1
+              color: lightgreen
+              bordercolor: lightgreen }
+
+  /* Graphical styling: arrows */
+  /* ------------------------- */
+
+  (.init).thickness: 4
+
+  (.loop).backarrowstyle: solid
+  (.loop).backarrowsize: 10
+
+  (.red): { color: red
+            arrowstyle: line }
+
+  /* uncomment next line to make blue edges blue */
+  /* (.blue) : { color: blue } */
+
+  (.green | .greenslave ): { color: green
+                             arrowstyle: line }
+
+  (.subst): { textcolor: darkgreen
+              bordercolor: green
+              color: lightgreen }
+
+  /* Colortable overrides */
+  /* -------------------- */
+
+  colorentry 0  /* white */      : 222 182 126
+  colorentry 2  /* red */        : 212 38 55
+  colorentry 3  /* green */      : 0 114 54
+  colorentry 4  /* yellow */     : 248 248 160
+  colorentry 5  /* magenta */    : 117 209 240
+  colorentry 9  /* darkred */    : 0 113 188
+  colorentry 10 /* darkgreen */  : 0 102 0
+  colorentry 18 /* lightgreen */ : 198 255 175
+  colorentry 15 /* lightgray */  : 221 238 238
+  colorentry 25 /* khaki */      : 179 207 230
+}

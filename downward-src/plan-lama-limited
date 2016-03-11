@@ -1,0 +1,50 @@
+#!/bin/bash
+
+BASEDIR="$(dirname "$0")"
+echo $BASEDIR
+
+#"$BASEDIR/plan-lama" $1 $2 > /dev/null &
+"$BASEDIR/plan-lama" $1 $2 &
+
+lamapid=$!
+
+if [ -e "createdPlans" ]
+then
+    LTIME=`stat -c %Z createdPlans`
+
+    while true
+    do
+	ATIME=`stat -c %Z createdPlans`
+	if [[ "$ATIME" != "$LTIME" ]] || ! ps -p $lamapid > /dev/null
+	then
+	    break
+	fi
+	sleep 0.1
+    done
+else
+    while true
+    do
+	if [ -e "createdPlans" ] || ! ps -p $lamapid > /dev/null
+	then
+	    break
+	fi
+	sleep 0.1
+    done
+fi
+
+
+echo Planning done! 
+
+sleep 1
+if ps -p $lamapid > /dev/null
+then
+  #echo We\'ve got some plans! Let\'s kill lama :\) >&2
+  kill -9 $lamapid
+#  killall -9 downward-1 2> /dev/null
+#  killall -9 downward-1-debug 2> /dev/null
+fi
+
+#wait $lamapid
+
+#echo $?
+

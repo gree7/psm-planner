@@ -1,0 +1,3 @@
+(define (problem logisitcs-s1)
+    (:domain logistics-simple)
+    (:agentTypes vehicle))

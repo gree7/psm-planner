@@ -1,0 +1,200 @@
+all: makedir fmap-projections
+
+fmap-projections: \
+	depots-ipc-fmap \
+	driverlog-ipc-fmap \
+	elevators-fmap \
+	logistics-ipc-fmap \
+	rovers-ipc-fmap \
+	satellites-ipc-fmap \
+	woodworking-fmap
+
+makedir:
+	mkdir -p projections-fmap
+
+clean:
+	rm -fr projections-fmap
+
+#
+# depots-ipc-fmap
+#
+depots-ipc-fmap=$(shell pwd)/ma-benchmarks/depots-ipc-fmap/depots-ipc-fmap
+depots-ipc-fmap: $(depots-ipc-fmap).pddl $(depots-ipc-fmap).addl \
+	depots-ipc-fmap-01 \
+	depots-ipc-fmap-02 \
+	depots-ipc-fmap-03 \
+	depots-ipc-fmap-04 \
+	depots-ipc-fmap-05 \
+	depots-ipc-fmap-06 \
+	depots-ipc-fmap-07 \
+	depots-ipc-fmap-08 \
+	depots-ipc-fmap-09 \
+	depots-ipc-fmap-10 \
+	depots-ipc-fmap-11 \
+	depots-ipc-fmap-12 \
+	depots-ipc-fmap-13 \
+	depots-ipc-fmap-14 \
+	depots-ipc-fmap-15 \
+	depots-ipc-fmap-16 \
+	depots-ipc-fmap-17 \
+	depots-ipc-fmap-18 \
+	depots-ipc-fmap-19 \
+	depots-ipc-fmap-20
+depots-ipc-fmap-%: $(depots-ipc-fmap)-%.pddl
+	cd projections-fmap; ../agentify.sh $(depots-ipc-fmap).pddl $(depots-ipc-fmap).addl $^
+
+#
+# driverlog-ipc-fmap
+#
+driverlog-ipc-fmap=$(shell pwd)/ma-benchmarks/driverlog-ipc-fmap/driverlog-ipc-fmap
+driverlog-ipc-fmap: $(driverlog-ipc-fmap).pddl $(driverlog-ipc-fmap).addl \
+	driverlog-ipc-fmap-01 \
+	driverlog-ipc-fmap-02 \
+	driverlog-ipc-fmap-03 \
+	driverlog-ipc-fmap-04 \
+	driverlog-ipc-fmap-05 \
+	driverlog-ipc-fmap-06 \
+	driverlog-ipc-fmap-07 \
+	driverlog-ipc-fmap-08 \
+	driverlog-ipc-fmap-09 \
+	driverlog-ipc-fmap-10 \
+	driverlog-ipc-fmap-11 \
+	driverlog-ipc-fmap-12 \
+	driverlog-ipc-fmap-13 \
+	driverlog-ipc-fmap-14 \
+	driverlog-ipc-fmap-15 \
+	driverlog-ipc-fmap-16 \
+	driverlog-ipc-fmap-17 \
+	driverlog-ipc-fmap-18 \
+	driverlog-ipc-fmap-19 \
+	driverlog-ipc-fmap-20
+driverlog-ipc-fmap-%: $(driverlog-ipc-fmap)-%.pddl
+	cd projections-fmap; ../agentify.sh $(driverlog-ipc-fmap).pddl $(driverlog-ipc-fmap).addl $^
+
+#
+# elevators-fmap
+#
+elevators-fmap=$(shell pwd)/ma-benchmarks/elevators-fmap/elevators-fmap
+elevators-fmap: $(elevators-fmap).pddl $(elevators-fmap).addl \
+	elevators-fmap-p01 \
+	elevators-fmap-p02 \
+	elevators-fmap-p03 \
+	elevators-fmap-p04 \
+	elevators-fmap-p05 \
+	elevators-fmap-p06 \
+	elevators-fmap-p07 \
+	elevators-fmap-p08 \
+	elevators-fmap-p09 \
+	elevators-fmap-p10
+elevators-fmap-%: $(elevators-fmap)-%.pddl
+	cd projections-fmap; ../agentify.sh $(elevators-fmap).pddl $(elevators-fmap).addl $^
+
+#
+# logistics-ipc-fmap
+#
+logistics-ipc-fmap=$(shell pwd)/ma-benchmarks/logistics-ipc-fmap/logistics-ipc-fmap
+logistics-ipc-fmap: $(logistics-ipc-fmap).pddl $(logistics-ipc-fmap).addl \
+	logistics-ipc-fmap-01 \
+	logistics-ipc-fmap-02 \
+	logistics-ipc-fmap-03 \
+	logistics-ipc-fmap-04 \
+	logistics-ipc-fmap-05 \
+	logistics-ipc-fmap-06 \
+	logistics-ipc-fmap-07 \
+	logistics-ipc-fmap-08 \
+	logistics-ipc-fmap-09 \
+	logistics-ipc-fmap-10 \
+	logistics-ipc-fmap-11 \
+	logistics-ipc-fmap-12 \
+	logistics-ipc-fmap-13 \
+	logistics-ipc-fmap-14 \
+	logistics-ipc-fmap-15 \
+	logistics-ipc-fmap-16 \
+	logistics-ipc-fmap-17 \
+	logistics-ipc-fmap-18 \
+	logistics-ipc-fmap-19 \
+	logistics-ipc-fmap-20 \
+	logistics-ipc-fmap-21 \
+	logistics-ipc-fmap-22 \
+	logistics-ipc-fmap-23 \
+	logistics-ipc-fmap-24 \
+	logistics-ipc-fmap-25 \
+	logistics-ipc-fmap-26 \
+	logistics-ipc-fmap-27 \
+	logistics-ipc-fmap-28
+logistics-ipc-fmap-%: $(logistics-ipc-fmap)-%.pddl
+	cd projections-fmap; ../agentify.sh $(logistics-ipc-fmap).pddl $(logistics-ipc-fmap).addl $^
+
+#
+# rovers-ipc-fmap
+#
+rovers-ipc-fmap=$(shell pwd)/ma-benchmarks/rovers-ipc-fmap/rovers-ipc-fmap
+rovers-ipc-fmap: $(rovers-ipc-fmap).pddl $(rovers-ipc-fmap).addl \
+	rovers-ipc-fmap-p01 \
+	rovers-ipc-fmap-p02 \
+	rovers-ipc-fmap-p03 \
+	rovers-ipc-fmap-p04 \
+	rovers-ipc-fmap-p05 \
+	rovers-ipc-fmap-p06 \
+	rovers-ipc-fmap-p07 \
+	rovers-ipc-fmap-p08 \
+	rovers-ipc-fmap-p09 \
+	rovers-ipc-fmap-p10 \
+	rovers-ipc-fmap-p11 \
+	rovers-ipc-fmap-p12 \
+	rovers-ipc-fmap-p13 \
+	rovers-ipc-fmap-p14 \
+	rovers-ipc-fmap-p15 \
+	rovers-ipc-fmap-p16 \
+	rovers-ipc-fmap-p17 \
+	rovers-ipc-fmap-p18 \
+	rovers-ipc-fmap-p19 \
+	rovers-ipc-fmap-p20
+rovers-ipc-fmap-%: $(rovers-ipc-fmap)-%.pddl
+	cd projections-fmap; ../agentify.sh $(rovers-ipc-fmap).pddl $(rovers-ipc-fmap).addl $^
+
+#
+# satellites-ipc-fmap
+#
+satellites-ipc-fmap=$(shell pwd)/ma-benchmarks/satellites-ipc-fmap/satellites-ipc-fmap
+satellites-ipc-fmap: $(satellites-ipc-fmap).pddl $(satellites-ipc-fmap).addl \
+	satellites-ipc-fmap-a01 \
+	satellites-ipc-fmap-a02 \
+	satellites-ipc-fmap-a03 \
+	satellites-ipc-fmap-a04 \
+	satellites-ipc-fmap-a05 \
+	satellites-ipc-fmap-a06 \
+	satellites-ipc-fmap-a07 \
+	satellites-ipc-fmap-a08 \
+	satellites-ipc-fmap-a09 \
+	satellites-ipc-fmap-a10 \
+	satellites-ipc-fmap-a11 \
+	satellites-ipc-fmap-a12 \
+	satellites-ipc-fmap-a13 \
+	satellites-ipc-fmap-a14 \
+	satellites-ipc-fmap-a15 \
+	satellites-ipc-fmap-a16 \
+	satellites-ipc-fmap-a17 \
+	satellites-ipc-fmap-a18 \
+	satellites-ipc-fmap-a19 \
+	satellites-ipc-fmap-a20
+satellites-ipc-fmap-%: $(satellites-ipc-fmap)-%.pddl
+	cd projections-fmap; ../agentify.sh $(satellites-ipc-fmap).pddl $(satellites-ipc-fmap).addl $^
+
+#
+# woodworking-fmap
+#
+woodworking-fmap=$(shell pwd)/ma-benchmarks/woodworking-fmap/woodworking-fmap
+woodworking-fmap: $(woodworking-fmap).pddl $(woodworking-fmap).addl \
+	woodworking-fmap-p01 \
+	woodworking-fmap-p02 \
+	woodworking-fmap-p03 \
+	woodworking-fmap-p04 \
+	woodworking-fmap-p05 \
+	woodworking-fmap-p06 \
+	woodworking-fmap-p07 \
+	woodworking-fmap-p08 \
+	woodworking-fmap-p09 \
+	woodworking-fmap-p10
+woodworking-fmap-%: $(woodworking-fmap)-%.pddl
+	cd projections-fmap; ../agentify.sh $(woodworking-fmap).pddl $(woodworking-fmap).addl $^

@@ -1,0 +1,3 @@
+(define (problem tires-a2)
+    (:domain tires)
+    (:agentTypes mounter hander))
