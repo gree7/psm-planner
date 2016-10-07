@@ -23,11 +23,15 @@ cd downward-src
 
 # Set up maven (see bellow)
 
-#build PSM planner
-cd ../FSM
+# install polystar
+cd ..
+sudo cp polystar-bin/* /usr/local/bin/
+
+# build PSM planner
+cd FSM
 mvn package
 
-#run example
+# run example
 chmod +x testPSM-CoDMAP.sh
 ./testPSM-CoDMAP.sh
 
