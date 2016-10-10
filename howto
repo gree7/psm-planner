@@ -29,7 +29,7 @@ sudo cp polystar-bin/* /usr/local/bin/
 
 # build PSM planner
 cd FSM
-mvn package
+mvn package -DskipTests
 
 # run example
 chmod +x testPSM-CoDMAP.sh
