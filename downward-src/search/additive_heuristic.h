@@ -3,7 +3,11 @@
 
 #include "priority_queue.h"
 #include "relaxation_heuristic.h"
+
 #include <cassert>
+
+class State;
+
 
 class AdditiveHeuristic : public RelaxationHeuristic {
     /* Costs larger than MAX_COST_VALUE are clamped to max_value. The
@@ -46,7 +50,7 @@ class AdditiveHeuristic : public RelaxationHeuristic {
     void write_overflow_warning();
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &global_state);
 
     // Common part of h^add and h^ff computation.
     int compute_add_and_ff(const State &state);

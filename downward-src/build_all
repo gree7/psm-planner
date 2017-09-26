@@ -1,13 +1,13 @@
 #! /bin/bash
 
+cd "$(dirname "$0")"
+
 cd preprocess
 make "$@" || exit 1
 cd ..
 
 cd search
-make "$@" STATE_VAR_BYTES=1 || exit 1
-make "$@" STATE_VAR_BYTES=2 || exit 1
-make "$@" STATE_VAR_BYTES=4 || exit 1
+make "$@" || exit 1
 cd ..
 
 if [ ! -e VAL ]; then
@@ -29,5 +29,11 @@ fi
 
 cd VAL
 make "$@" || exit 1
-cp validate ../
+if [ -f validate ]; then
+    strip validate
+    cp validate ../
+fi
 cd ..
+if [[ $# == 1 && "$1" == distclean ]]; then
+    rm -f validate
+fi

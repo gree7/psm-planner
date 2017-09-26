@@ -1,13 +1,15 @@
 #include "weighted_evaluator.h"
 
-#include <cstdlib>
-#include <sstream>
-
+#include "evaluation_context.h"
+#include "evaluation_result.h"
 #include "option_parser.h"
 #include "plugin.h"
 
+#include <cstdlib>
+#include <sstream>
+
 WeightedEvaluator::WeightedEvaluator(const Options &opts)
-    : evaluator(opts.get_list<ScalarEvaluator *>("evals")[0]),
+    : evaluator(opts.get<ScalarEvaluator *>("eval")),
       w(opts.get<int>("weight")) {
 }
 
@@ -19,22 +21,21 @@ WeightedEvaluator::WeightedEvaluator(ScalarEvaluator *eval, int weight)
 WeightedEvaluator::~WeightedEvaluator() {
 }
 
-void WeightedEvaluator::evaluate(int g, bool preferred) {
-    evaluator->evaluate(g, preferred);
-    value = w * evaluator->get_value();
-    // TODO: catch overflow?
+bool WeightedEvaluator::dead_ends_are_reliable() const {
+    return evaluator->dead_ends_are_reliable();
 }
 
-bool WeightedEvaluator::is_dead_end() const {
-    return evaluator->is_dead_end();
-}
-
-bool WeightedEvaluator::dead_end_is_reliable() const {
-    return evaluator->dead_end_is_reliable();
-}
-
-int WeightedEvaluator::get_value() const {
-    return value;
+EvaluationResult WeightedEvaluator::compute_result(
+    EvaluationContext &eval_context) {
+    // Note that this produces no preferred operators.
+    EvaluationResult result;
+    int h_val = eval_context.get_heuristic_value_or_infinity(evaluator);
+    if (h_val != EvaluationResult::INFINITE) {
+        // TODO: Check for overflow?
+        h_val *= w;
+    }
+    result.set_h_value(h_val);
+    return result;
 }
 
 void WeightedEvaluator::get_involved_heuristics(std::set<Heuristic *> &hset) {
@@ -42,8 +43,11 @@ void WeightedEvaluator::get_involved_heuristics(std::set<Heuristic *> &hset) {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_list_option<ScalarEvaluator *>("evals");
-    parser.add_option<int>("weight");
+    parser.document_synopsis(
+        "Weighted evaluator",
+        "Multiplies the value of the scalar evaluator with the given weight.");
+    parser.add_option<ScalarEvaluator *>("eval", "scalar evaluator");
+    parser.add_option<int>("weight", "weight");
     Options opts = parser.parse();
     if (parser.dry_run())
         return 0;

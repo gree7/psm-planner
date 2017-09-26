@@ -43,4 +43,8 @@ public class DotAttr {
 		return new DotAttr("fontcolor", val);		
 	}
 
+    public static DotAttr dir(String val) {
+        return new DotAttr("dir", val);       
+    }
+
 }

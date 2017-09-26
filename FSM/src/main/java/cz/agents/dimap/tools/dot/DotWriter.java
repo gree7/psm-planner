@@ -8,23 +8,36 @@ public class DotWriter extends FileWriter {
 
 	private String baseName;
 	
-	public DotWriter(String baseName) throws IOException {
+	public DotWriter(String baseName, DotAttr... graphAttrs) throws IOException {
 		super(baseName+".dot");
 		this.baseName = baseName;
+		writeHeader();
+		writeGraphStyle(graphAttrs);
 	}
 
+	public DotWriter(String baseName) throws IOException {
+		this(baseName, DotAttr.attr("overlap", "false"), DotAttr.attr("sep", "+20;20"), DotAttr.attr("splines", "spline"));
+		writeNodeStyle(DotAttr.shape("Mrecord"));
+	}
+	
 	public DotWriter(File file) throws IOException {
 		this(file.getPath());
 	}
 
+	@Override
+	public void close() throws IOException {
+		writeFooter();
+		super.close();
+	}
+	
 	/*
 	 * Top level, Graphs
 	 */
-	public void writeHeader() throws IOException {
+	private void writeHeader() throws IOException {
 		write("digraph {\n\n");
 	}
 
-	public void writeFooter() throws IOException {
+	private void writeFooter() throws IOException {
 		write("\n}\n");
 	}
 	
@@ -88,7 +101,13 @@ public class DotWriter extends FileWriter {
 	}
 
 	public void generate() throws IOException {
-		DotTools.runDotToSvg(baseName);
+		generate("svg");
 	}
 	
+	public void generate(String imgFormat) throws IOException {
+		ProcessBuilder dotProcess = new ProcessBuilder("dot", "-T"+imgFormat, baseName+".dot");
+		dotProcess.redirectOutput(new File(baseName+"."+imgFormat));
+		dotProcess.start();
+	}
+
 }

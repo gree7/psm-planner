@@ -1,0 +1,6 @@
+#! /bin/bash
+
+wdir=$([[ $0 == /* ]] && echo "${0%/*}" || echo "${PWD}/${0%/*}")
+
+$wdir/fast-downward.py --alias seq-sat-fdss-2 $1 $2
+

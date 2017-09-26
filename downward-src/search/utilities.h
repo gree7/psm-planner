@@ -1,33 +1,42 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
-#include <cassert>
-#include <ostream>
-#include <utility>
-#include <vector>
-#include <tr1/functional>
 
 #define LINUX 0
 #define OSX 1
 #define CYGWIN 2
+#define WINDOWS 3
 
 #if defined(__CYGWIN32__)
 #define OPERATING_SYSTEM CYGWIN
-#elif defined(__WINNT__)
-#define OPERATING_SYSTEM CYGWIN
+#elif defined(_WIN32)
+#define OPERATING_SYSTEM WINDOWS
 #elif defined(__APPLE__)
 #define OPERATING_SYSTEM OSX
 #else
 #define OPERATING_SYSTEM LINUX
 #endif
 
+#include <cstdlib>
+#include <functional>
+#include <iostream>
+#include <utility>
+#include <vector>
+
+#if OPERATING_SYSTEM == WINDOWS
+#define NO_RETURN __declspec(noreturn)
+#else
+#define NO_RETURN __attribute__((noreturn))
+#endif
+
 #define ABORT(msg) \
-  ( \
-    (cerr << "Critical error in file " << __FILE__ \
-          << ", line " << __LINE__ << ": " << msg << endl), \
-    (abort()), \
-    (void)0 \
-  )
+    ( \
+        (std::cerr << "Critical error in file " << __FILE__ \
+                   << ", line " << __LINE__ << ": " << std::endl \
+                   << (msg) << std::endl), \
+        (abort()), \
+        (void)0 \
+    )
 
 enum ExitCode {
     EXIT_PLAN_FOUND = 0,
@@ -38,22 +47,33 @@ enum ExitCode {
     EXIT_UNSOLVABLE = 4,
     // Search ended without finding a solution.
     EXIT_UNSOLVED_INCOMPLETE = 5,
-    EXIT_OUT_OF_MEMORY = 6,
-    // Currently unused.
-    EXIT_TIMEOUT = 7
+    EXIT_OUT_OF_MEMORY = 6
 };
 
-extern void exit_with(ExitCode returncode) __attribute__((noreturn));
+NO_RETURN extern void exit_with(ExitCode returncode);
 
 extern void register_event_handlers();
 
-extern int get_peak_memory_in_kb();
-extern void print_peak_memory();
-extern void assert_sorted_unique(const std::vector<int> &values);
+extern int get_peak_memory_in_kb(bool use_buffered_input = true);
+extern void print_peak_memory(bool use_buffered_input = true);
+
+/* Test if the product of two numbers is bounded by a third number.
+   Safe against overflow. The caller must guarantee
+   0 <= factor1, factor2 <= limit; failing this is an error. */
+extern bool is_product_within_limit(int factor1, int factor2, int limit);
+
+template<class T>
+extern bool is_sorted_unique(const std::vector<T> &values) {
+    for (size_t i = 1; i < values.size(); ++i) {
+        if (values[i - 1] >= values[i])
+            return false;
+    }
+    return true;
+}
 
 namespace std {
 template<class T>
-ostream & operator<<(ostream &stream, const vector<T> &vec) {
+ostream &operator<<(ostream &stream, const vector<T> &vec) {
     stream << "[";
     for (size_t i = 0; i < vec.size(); ++i) {
         if (i != 0)
@@ -65,38 +85,25 @@ ostream & operator<<(ostream &stream, const vector<T> &vec) {
 }
 }
 
-template<class Sequence>
-size_t hash_number_sequence(const Sequence &data, size_t length) {
-    // hash function adapted from Python's hash function for tuples.
-    size_t hash_value = 0x345678;
-    size_t mult = 1000003;
-    for (int i = length - 1; i >= 0; --i) {
-        hash_value = (hash_value ^ data[i]) * mult;
-        mult += 82520 + i + i;
-    }
-    hash_value += 97531;
-    return hash_value;
+template<class T>
+bool in_bounds(int index, const T &container) {
+    return index >= 0 && static_cast<size_t>(index) < container.size();
 }
 
-struct hash_int_pair {
-    size_t operator()(const std::pair<int, int> &key) const {
-        return size_t(key.first * 1337 + key.second);
-    }
-};
+template<class T>
+bool in_bounds(size_t index, const T &container) {
+    return index < container.size();
+}
 
-struct hash_pointer_pair {
-    size_t operator()(const std::pair<void *, void *> &key) const {
-        return size_t(size_t(key.first) * 1337 + size_t(key.second));
-    }
-};
+template<typename T>
+void unused_parameter(const T &) {
+}
 
-class hash_pointer {
-public:
-    size_t operator()(const void *p) const {
-        //return size_t(reinterpret_cast<int>(p));
-        std::tr1::hash<const void *> my_hash_class;
-        return my_hash_class(p);
-    }
-};
+int get_process_id();
+
+template<class T>
+void release_vector_memory(std::vector<T> &vec) {
+    std::vector<T>().swap(vec);
+}
 
 #endif

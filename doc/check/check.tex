@@ -1,0 +1,6 @@
+	\chapter{Check -ch}
+	This is not reduction operation. In fact, it is a function that stops executing reductions if they are not needed. 
+	
+	Let have SAS in form $<\vars, \init, \goal, \actions, \mutexes{}>$. If $\goal \subseteq \init$ then stop further reductions; otherwise continue.
+	
+	If the check is set to true, then it tests if $\goal \subseteq \init$ after each reduction.

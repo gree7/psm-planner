@@ -24,7 +24,7 @@ class FFHeuristic : public AdditiveHeuristic {
         const State &state, Proposition *goal);
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &global_state);
 public:
     FFHeuristic(const Options &options);
     ~FFHeuristic();

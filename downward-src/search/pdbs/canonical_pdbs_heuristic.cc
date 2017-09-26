@@ -5,11 +5,12 @@
 #include "pdb_heuristic.h"
 #include "util.h"
 
+#include "../evaluation_context.h"
+#include "../global_operator.h"
+#include "../global_state.h"
 #include "../globals.h"
-#include "../operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../state.h"
 #include "../timer.h"
 #include "../utilities.h"
 
@@ -21,7 +22,8 @@ using namespace std;
 
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)
     : Heuristic(opts) {
-    const vector<vector<int> > &pattern_collection(opts.get_list<vector<int> >("patterns"));
+    const vector<vector<int> > &pattern_collection(
+        opts.get_list<vector<int> >("patterns"));
     Timer timer;
     size = 0;
     pattern_databases.reserve(pattern_collection.size());
@@ -40,6 +42,7 @@ CanonicalPDBsHeuristic::~CanonicalPDBsHeuristic() {
 
 void CanonicalPDBsHeuristic::_add_pattern(const vector<int> &pattern) {
     Options opts;
+    opts.set<shared_ptr<AbstractTask> >("transform", task);
     opts.set<int>("cost_type", cost_type);
     opts.set<vector<int> >("pattern", pattern);
     pattern_databases.push_back(new PDBHeuristic(opts, false));
@@ -93,9 +96,9 @@ void CanonicalPDBsHeuristic::compute_additive_vars() {
     assert(are_additive.empty());
     int num_vars = g_variable_domain.size();
     are_additive.resize(num_vars, vector<bool>(num_vars, true));
-    for (size_t k = 0; k < g_operators.size(); ++k) {
-        const Operator &o = g_operators[k];
-        const vector<PrePost> effects = o.get_pre_post();
+    for (size_t i = 0; i < g_operators.size(); ++i) {
+        const GlobalOperator &o = g_operators[i];
+        const vector<GlobalEffect> effects = o.get_effects();
         for (size_t e1 = 0; e1 < effects.size(); ++e1) {
             for (size_t e2 = 0; e2 < effects.size(); ++e2) {
                 are_additive[effects[e1].var][effects[e2].var] = false;
@@ -128,22 +131,38 @@ void CanonicalPDBsHeuristic::dominance_pruning() {
 void CanonicalPDBsHeuristic::initialize() {
 }
 
-int CanonicalPDBsHeuristic::compute_heuristic(const State &state) {
+int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &state) {
     int max_h = 0;
     assert(!max_cliques.empty());
     // if we have an empty collection, then max_cliques = { \emptyset }
 
-    for (size_t i = 0; i < pattern_databases.size(); ++i) {
-        pattern_databases[i]->evaluate(state);
-        if (pattern_databases[i]->is_dead_end())
-            return -1;
-    }
-    for (size_t i = 0; i < max_cliques.size(); ++i) {
-        const vector<PDBHeuristic *> &clique = max_cliques[i];
+    /*
+      We use an internal EvaluationContext here to compute the PDBs
+      inside this canonical PDB heuristic.
+
+      We don't want to use the evaluation context by the surrounding
+      search because we want our internal PDBs to be "invisible" to
+      that search. If we used the external evaluation context, we
+      would see output for each new "best heuristic value" for them,
+      each PDB evaluation would show up as an evaluation in the
+      statistics, etc.
+
+      Using an evaluation context here at all obviously introduces
+      overhead, and in the future we might want to reconsider the
+      question whether having the contained PDBs actually be Heuristic
+      objects is the best implementation choice.
+    */
+
+    EvaluationContext eval_context(state);
+
+    for (PDBHeuristic *pdb : pattern_databases)
+        if (eval_context.is_heuristic_infinite(pdb))
+            return DEAD_END;
+
+    for (const vector<PDBHeuristic *> &clique : max_cliques) {
         int clique_h = 0;
-        for (size_t j = 0; j < clique.size(); ++j) {
-            clique_h += clique[j]->get_heuristic();
-        }
+        for (PDBHeuristic *pdb : clique)
+            clique_h += eval_context.get_heuristic_value(pdb);
         max_h = max(max_h, clique_h);
     }
     return max_h;
@@ -223,6 +242,20 @@ void CanonicalPDBsHeuristic::get_max_additive_subsets(
     }
 }
 
+bool CanonicalPDBsHeuristic::is_dead_end(const GlobalState &state) const {
+    /*
+      See comment regarding evaluation contexts in compute_heuristic.
+      The efficiency concern is even more valid here because we don't
+      use the same PDB value once, so the caching feature of
+      evaluation contexts is not needed here.
+    */
+    EvaluationContext eval_context(state);
+    for (PDBHeuristic *pdb : pattern_databases)
+        if (eval_context.is_heuristic_infinite(pdb))
+            return true;
+    return false;
+}
+
 void CanonicalPDBsHeuristic::dump_cgraph(const vector<vector<int> > &cgraph) const {
     // print compatibility graph
     cout << "Compatibility graph" << endl;
@@ -258,7 +291,21 @@ void CanonicalPDBsHeuristic::dump() const {
     }
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Canonical PDB",
+        "The canonical pattern database heuristic is calculated as follows. "
+        "For a given pattern collection C, the value of the canonical heuristic "
+        "function is the maximum over all maximal additive subsets A in C, where "
+        "the value for one subset S in A is the sum of the heuristic values for "
+        "all patterns in S for a given state.");
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support("conditional effects", "not supported");
+    parser.document_language_support("axioms", "not supported");
+    parser.document_property("admissible", "yes");
+    parser.document_property("consistent", "yes");
+    parser.document_property("safe", "yes");
+    parser.document_property("preferred operators", "no");
     Heuristic::add_options_to_parser(parser);
     Options opts;
     parse_patterns(parser, opts);
@@ -269,4 +316,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return new CanonicalPDBsHeuristic(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin("cpdbs", _parse);
+static Plugin<Heuristic> _plugin("cpdbs", _parse);

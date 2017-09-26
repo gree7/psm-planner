@@ -1,0 +1,153 @@
+begin_version
+3
+end_version
+begin_metric
+0
+end_metric
+3
+begin_variable
+var0
+-1
+2
+Atom at(plane, ostrava)
+Atom at(plane, prague)
+end_variable
+begin_variable
+var1
+-1
+2
+Atom at(truck, pilsen)
+Atom at(truck, prague)
+end_variable
+begin_variable
+var2
+-1
+5
+Atom beer_in(ostrava)
+Atom beer_in(pilsen)
+Atom beer_in(plane)
+Atom beer_in(prague)
+Atom beer_in(truck)
+end_variable
+3
+begin_mutex_group
+2
+0 0
+0 1
+end_mutex_group
+begin_mutex_group
+2
+1 0
+1 1
+end_mutex_group
+begin_mutex_group
+5
+2 0
+2 1
+2 2
+2 3
+2 4
+end_mutex_group
+begin_state
+1
+1
+1
+end_state
+begin_goal
+1
+2 0
+end_goal
+12
+begin_operator
+load plane ostrava
+1
+0 0
+1
+0 2 0 2
+1
+end_operator
+begin_operator
+load plane prague
+1
+0 1
+1
+0 2 3 2
+1
+end_operator
+begin_operator
+load truck pilsen
+1
+1 0
+1
+0 2 1 4
+1
+end_operator
+begin_operator
+load truck prague
+1
+1 1
+1
+0 2 3 4
+1
+end_operator
+begin_operator
+move plane ostrava prague
+0
+1
+0 0 0 1
+1
+end_operator
+begin_operator
+move plane prague ostrava
+0
+1
+0 0 1 0
+1
+end_operator
+begin_operator
+move truck pilsen prague
+0
+1
+0 1 0 1
+1
+end_operator
+begin_operator
+move truck prague pilsen
+0
+1
+0 1 1 0
+1
+end_operator
+begin_operator
+unload plane ostrava
+1
+0 0
+1
+0 2 2 0
+1
+end_operator
+begin_operator
+unload plane prague
+1
+0 1
+1
+0 2 2 3
+1
+end_operator
+begin_operator
+unload truck pilsen
+1
+1 0
+1
+0 2 4 1
+1
+end_operator
+begin_operator
+unload truck prague
+1
+1 1
+1
+0 2 4 3
+1
+end_operator
+0

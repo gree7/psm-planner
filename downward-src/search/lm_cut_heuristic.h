@@ -10,11 +10,10 @@
 
 // TODO: Fix duplication with the other relaxation heuristics.
 
-class Operator;
-class State;
-
-class RelaxedProposition;
-class RelaxedOperator;
+class GlobalState;
+class OperatorProxy;
+struct RelaxedProposition;
+struct RelaxedOperator;
 
 class Options;
 /* TODO: Check the impact of using unary relaxed operators instead of
@@ -58,8 +57,8 @@ const int COST_MULTIPLIER = 1;
  */
 
 struct RelaxedOperator {
-    const Operator *op;
-    std::vector<RelaxedProposition *> precondition;
+    int original_op_id;
+    std::vector<RelaxedProposition *> preconditions;
     std::vector<RelaxedProposition *> effects;
     int base_cost; // 0 for axioms, 1 for regular operators
 
@@ -67,10 +66,10 @@ struct RelaxedOperator {
     int unsatisfied_preconditions;
     int h_max_supporter_cost; // h_max_cost of h_max_supporter
     RelaxedProposition *h_max_supporter;
-    RelaxedOperator(const std::vector<RelaxedProposition *> &pre,
-                    const std::vector<RelaxedProposition *> &eff,
-                    const Operator *the_op, int base)
-        : op(the_op), precondition(pre), effects(eff), base_cost(base) {
+    RelaxedOperator(std::vector<RelaxedProposition *> && pre,
+                    std::vector<RelaxedProposition *> && eff,
+                    int op_id, int base)
+        : original_op_id(op_id), preconditions(pre), effects(eff), base_cost(base) {
     }
 
     inline void update_h_max_supporter();
@@ -99,9 +98,6 @@ struct RelaxedProposition {
        depths). See if the init h values degrade compared to Python
        without explicit depth tie-breaking, then decide.
     */
-
-    RelaxedProposition() {
-    }
 };
 
 class LandmarkCutHeuristic : public Heuristic {
@@ -113,11 +109,12 @@ class LandmarkCutHeuristic : public Heuristic {
     AdaptiveQueue<RelaxedProposition *> priority_queue;
 
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
-    void build_relaxed_operator(const Operator &op);
-    void add_relaxed_operator(const std::vector<RelaxedProposition *> &precondition,
-                              const std::vector<RelaxedProposition *> &effects,
-                              const Operator *op, int base_cost);
+    virtual int compute_heuristic(const GlobalState &state);
+    void build_relaxed_operator(const OperatorProxy &op);
+    void add_relaxed_operator(std::vector<RelaxedProposition *> && precondition,
+                              std::vector<RelaxedProposition *> && effects,
+                              int op_id, int base_cost);
+    RelaxedProposition *get_proposition(const FactProxy &fact);
     void setup_exploration_queue();
     void setup_exploration_queue_state(const State &state);
     void first_exploration(const State &state);
@@ -143,9 +140,9 @@ public:
 
 inline void RelaxedOperator::update_h_max_supporter() {
     assert(!unsatisfied_preconditions);
-    for (int i = 0; i < precondition.size(); i++)
-        if (precondition[i]->h_max_cost > h_max_supporter->h_max_cost)
-            h_max_supporter = precondition[i];
+    for (size_t i = 0; i < preconditions.size(); ++i)
+        if (preconditions[i]->h_max_cost > h_max_supporter->h_max_cost)
+            h_max_supporter = preconditions[i];
     h_max_supporter_cost = h_max_supporter->h_max_cost;
 }
 

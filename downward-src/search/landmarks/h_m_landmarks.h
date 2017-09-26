@@ -19,7 +19,7 @@ struct FluentSetComparer {
         if (fs1.size() != fs2.size()) {
             return fs1.size() < fs2.size();
         }
-        for (int i = 0; i < fs1.size(); i++) {
+        for (size_t i = 0; i < fs1.size(); ++i) {
             if (fs1[i].first != fs2[i].first) {
                 return fs1[i].first < fs2[i].first;
             }
@@ -75,7 +75,7 @@ public:
     bool interesting(int var1, int val1, int var2, int val2);
 private:
 //  typedef std::set<std::pair<int,int> > TriggerSet;
-    typedef __gnu_cxx::hash_map<int, std::set<int> > TriggerSet;
+    typedef std::unordered_map<int, std::set<int> > TriggerSet;
 
     virtual void generate_landmarks();
 
@@ -138,11 +138,11 @@ private:
     void get_m_sets(int m, std::vector<FluentSet> &subsets, const FluentSet &superset);
 
     void get_m_sets(int m, std::vector<FluentSet> &subsets,
-                    const State &s);
+                    const GlobalState &s);
 
     void get_split_m_sets(int m, std::vector<FluentSet> &subsets,
                           const FluentSet &superset1, const FluentSet &superset2);
-    void print_proposition(const pair<int, int> &fluent) const;
+    void print_proposition(const std::pair<int, int> &fluent) const;
 };
 
 #endif

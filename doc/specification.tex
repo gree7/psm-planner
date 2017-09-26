@@ -1,0 +1,59 @@
+\documentclass{report}
+
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{subcaption} 
+\usepackage{color}
+
+
+\setcounter{tocdepth}{0}
+
+\newtheorem{definition}{Definition}
+
+\newcounter{todoNoteCounter}
+\newcommand{\todo}[1]{{\scriptsize  \color{red} \refstepcounter{todoNoteCounter}\textsf{[TODO]$_{\arabic{todoNoteCounter}}$:{#1}}}}
+
+\newcommand{\vars}{V}
+\newcommand{\init}{I}
+\newcommand{\goal}{G}
+\newcommand{\actions}{A}
+\newcommand{\mutexes}{M}
+\newcommand{\vals}{W}
+\newcommand{\dom}[1]{dom(#1)}
+\newcommand{\var}[1]{var(#1)}
+\newcommand{\pre}[1]{pre(#1)}
+\newcommand{\add}[1]{add(#1)}
+\newcommand{\del}[1]{del(#1)}
+\newcommand{\eff}[1]{eff(#1)}
+\newcommand{\con}[1]{con(#1)}
+\newcommand{\pro}[1]{pro(#1)}
+\newcommand{\wan}[1]{wan(#1)}
+\newcommand{\isAnyValue}[1]{isAnyValue(#1)}
+
+
+\begin{document}
+	
+	%\chapter{PSM-SAS reduction planner}
+	
+	\tableofcontents
+	
+	\input{notation}
+	
+	\input{mergingValues/mergingValues}
+	\input{bigMergingValues/bigMergingValues}
+	\input{deleteVariable/deleteVariable}
+	\input{simpleDependency/simpleDependency}
+	\input{mergingSimilarOperators/mergingSimilarOperators}
+	\input{unreachableValues/unreachableValues}
+	\input{deadEnds/deadEnds}
+	\input{halfCycle/halfCycle}
+	\input{oneEffectDelete/oneEffectDelete}
+	\input{oneUsage/oneUsage}	
+	\input{generalizeActions/generalizeActions}		
+	\input{useApplicableActionInStart/useApplicableActionInStart}
+	\input{singleFirstActionMergeWithStart/singleFirstActionMergeWithStart}
+	\input{actionStartMerge/actionStartMerge}
+
+	\input{check/check}			
+	
+\end{document}

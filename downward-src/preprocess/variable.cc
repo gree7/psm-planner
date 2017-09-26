@@ -40,8 +40,7 @@ string Variable::get_name() const {
 }
 
 bool Variable::is_necessary() const {
-    return true;
-    //return necessary;
+    return necessary;
 }
 
 void Variable::dump() const {

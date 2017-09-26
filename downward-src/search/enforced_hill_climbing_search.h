@@ -1,59 +1,67 @@
 #ifndef ENFORCED_HILL_CLIMBING_SEARCH_H
 #define ENFORCED_HILL_CLIMBING_SEARCH_H
 
+#include "evaluation_context.h"
 #include "search_engine.h"
-#include "globals.h"
-#include "search_space.h"
-#include "search_node_info.h"
-#include "operator.h"
-#include "state.h"
+
 #include "open_lists/open_list.h"
-#include "g_evaluator.h"
-#include "search_progress.h"
-#include <vector>
+
 #include <map>
+#include <set>
+#include <utility>
+#include <vector>
 
-using namespace std;
-
+class GEvaluator;
 class Options;
 
-typedef pair<pair<state_var_t *,short *>, pair<int, const Operator * > > OpenListEntryEHC;
+typedef std::pair<StateID, std::pair<int, const GlobalOperator * > > OpenListEntryEHC;
 
-enum PreferredUsage {
-    PRUNE_BY_PREFERRED, RANK_PREFERRED_FIRST,
-    MAX_PREFERRED_USAGE
+enum class PreferredUsage {
+    PRUNE_BY_PREFERRED,
+    RANK_PREFERRED_FIRST
 };
 
+/*
+  Enforced hill-climbing with deferred evaluation.
+
+  TODO: We should test if this lazy implementation really has any benefits over
+  an eager one. We hypothesize that both versions need to evaluate and store
+  the same states anyways.
+*/
 class EnforcedHillClimbingSearch : public SearchEngine {
-protected:
+    std::vector<const GlobalOperator *> get_successors(
+        EvaluationContext &eval_context);
+    void expand(EvaluationContext &eval_context, int d);
+    void reach_state(
+        const GlobalState &parent, const GlobalOperator &op,
+        const GlobalState &state);
+    SearchStatus ehc();
+
     OpenList<OpenListEntryEHC> *open_list;
     GEvaluator *g_evaluator;
 
     Heuristic *heuristic;
-    bool preferred_contains_eval;
-    vector<Heuristic *> preferred_heuristics;
+    std::vector<Heuristic *> preferred_operator_heuristics;
+    std::set<Heuristic *> heuristics;
     bool use_preferred;
     PreferredUsage preferred_usage;
 
-    State current_state;
-    int current_h;
-    int current_g;
+    EvaluationContext current_eval_context;
 
-    // statistics
-    map<int, pair<int, int> > d_counts;
+    // Statistics
+    std::map<int, std::pair<int, int> > d_counts;
     int num_ehc_phases;
-    int last_expanded;
+    int last_num_expanded;
 
-    virtual void initialize();
-    virtual int step();
-    int ehc();
-    void get_successors(const State &state, vector<const Operator *> &ops);
-    void evaluate(const State &parent, const Operator *op, const State &state);
+protected:
+    virtual void initialize() override;
+    virtual SearchStatus step() override;
+
 public:
-    EnforcedHillClimbingSearch(const Options &opts);
-    virtual ~EnforcedHillClimbingSearch();
+    explicit EnforcedHillClimbingSearch(const Options &opts);
+    virtual ~EnforcedHillClimbingSearch() override;
 
-    virtual void statistics() const;
+    virtual void print_statistics() const override;
 };
 
 #endif

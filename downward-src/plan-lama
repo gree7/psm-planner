@@ -1,25 +1,6 @@
 #! /bin/bash
 
-set -e
+wdir=$([[ $0 == /* ]] && echo "${0%/*}" || echo "${PWD}/${0%/*}")
 
-BASEDIR="$(dirname "$0")"
-
-function die {
-    echo "$@" 1>&2
-    exit 1
-}
-
-function usage {
-    die "usage: $(basename "$0") DOMAIN_FILE PROBLEM_FILE"
-}
-
-if [[ "$#" != 2 ]]; then
-    usage
-fi
-
-DOMAIN=$1
-PROBLEM=$2
-SEARCH_OPTIONS="ipc seq-sat-lama-2011"
-
-"$BASEDIR/plan" $1 $2 $SEARCH_OPTIONS
+$wdir/fast-downward.py --alias seq-sat-lama-2011 $1 $2
 

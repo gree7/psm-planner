@@ -32,10 +32,10 @@ class CanonicalPDBsHeuristic : public Heuristic {
     void dump_cgraph(const std::vector<std::vector<int> > &cgraph) const;
     void dump_cliques() const;
 protected:
-    virtual void initialize();
-    virtual int compute_heuristic(const State &state);
+    virtual void initialize() override;
+    virtual int compute_heuristic(const GlobalState &state) override;
 public:
-    CanonicalPDBsHeuristic(const Options &opts);
+    explicit CanonicalPDBsHeuristic(const Options &opts);
     virtual ~CanonicalPDBsHeuristic();
 
     // add a new pattern to the collection and recomputes maximal cliques
@@ -47,10 +47,23 @@ public:
     void dominance_pruning();
 
     // checks for all max cliques if they would be additive to this pattern
-    void get_max_additive_subsets(const std::vector<int> &new_pattern,
-                                  std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets);
-    const std::vector<PDBHeuristic *> &get_pattern_databases() const {return pattern_databases; }
-    int get_size() const {return size; }
+    void get_max_additive_subsets(
+        const std::vector<int> &new_pattern,
+        std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets);
+
+    /*
+      The following method offers a quick dead-end check for the
+      sampling procedure of iPDB. This exists because we can much more
+      efficiently test if the canonical heuristic is infinite than
+      computing the exact heuristic value.
+    */
+    bool is_dead_end(const GlobalState &state) const;
+    const std::vector<PDBHeuristic *> &get_pattern_databases() const {
+        return pattern_databases;
+    }
+    int get_size() const {
+        return size;
+    }
     void dump() const;
 };
 

@@ -1,0 +1,7 @@
+#! /bin/bash
+
+wdir=$([[ $0 == /* ]] && echo "${0%/*}" || echo "${PWD}/${0%/*}")
+
+$wdir/preprocess/preprocess < $1
+$wdir/fast-downward.py --alias seq-sat-lama-2011 output
+

@@ -1,15 +1,19 @@
 #include "relaxation_heuristic.h"
 
+#include "global_operator.h"
+#include "global_state.h"
 #include "globals.h"
-#include "operator.h"
-#include "state.h"
+#include "task_proxy.h"
+#include "utilities.h"
+#include "utilities_hash.h"
 
+#include <algorithm>
 #include <cassert>
+#include <cstddef>
+#include <unordered_map>
 #include <vector>
-using namespace std;
 
-#include <ext/hash_map>
-using namespace __gnu_cxx;
+using namespace std;
 
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(const Options &opts)
@@ -19,105 +23,80 @@ RelaxationHeuristic::RelaxationHeuristic(const Options &opts)
 RelaxationHeuristic::~RelaxationHeuristic() {
 }
 
+bool RelaxationHeuristic::dead_ends_are_reliable() const {
+    return !has_axioms();
+}
+
 // initialization
 void RelaxationHeuristic::initialize() {
     // Build propositions.
     int prop_id = 0;
-    propositions.resize(g_variable_domain.size());
-    for (int var = 0; var < g_variable_domain.size(); var++) {
-        for (int value = 0; value < g_variable_domain[var]; value++)
-            propositions[var].push_back(Proposition(prop_id++));
+    VariablesProxy variables = task_proxy.get_variables();
+    propositions.resize(variables.size());
+    for (FactProxy fact : variables.get_facts()) {
+        propositions[fact.get_variable().get_id()].push_back(Proposition(prop_id++));
     }
 
     // Build goal propositions.
-    for (int i = 0; i < g_goal.size(); i++) {
-        int var = g_goal[i].first, val = g_goal[i].second;
-        propositions[var][val].is_goal = true;
-        goal_propositions.push_back(&propositions[var][val]);
+    for (FactProxy goal : task_proxy.get_goals()) {
+        Proposition *prop = get_proposition(goal);
+        prop->is_goal = true;
+        goal_propositions.push_back(prop);
     }
 
     // Build unary operators for operators and axioms.
-    for (int i = 0; i < g_operators.size(); i++)
-        build_unary_operators(g_operators[i], i);
-    for (int i = 0; i < g_axioms.size(); i++)
-        build_unary_operators(g_axioms[i], -1);
+    int op_no = 0;
+    for (OperatorProxy op : task_proxy.get_operators())
+        build_unary_operators(op, op_no++);
+    for (OperatorProxy axiom : task_proxy.get_axioms())
+        build_unary_operators(axiom, -1);
 
     // Simplify unary operators.
     simplify();
 
     // Cross-reference unary operators.
-    for (int i = 0; i < unary_operators.size(); i++) {
+    for (size_t i = 0; i < unary_operators.size(); ++i) {
         UnaryOperator *op = &unary_operators[i];
-        for (int j = 0; j < op->precondition.size(); j++)
+        for (size_t j = 0; j < op->precondition.size(); ++j)
             op->precondition[j]->precondition_of.push_back(op);
     }
 }
 
-void RelaxationHeuristic::build_unary_operators(const Operator &op, int op_no) {
-    int base_cost = get_adjusted_cost(op);
-    const vector<Prevail> &prevail = op.get_prevail();
-    const vector<PrePost> &pre_post = op.get_pre_post();
-    vector<Proposition *> precondition;
-    for (int i = 0; i < prevail.size(); i++) {
-        assert(prevail[i].var >= 0 && prevail[i].var < g_variable_domain.size());
-        assert(prevail[i].prev >= 0 && prevail[i].prev < g_variable_domain[prevail[i].var]);
-        precondition.push_back(&propositions[prevail[i].var][prevail[i].prev]);
-    }
-    for (int i = 0; i < pre_post.size(); i++) {
-        if (pre_post[i].pre != -1) {
-            assert(pre_post[i].var >= 0 && pre_post[i].var < g_variable_domain.size());
-            assert(pre_post[i].pre >= 0 && pre_post[i].pre < g_variable_domain[pre_post[i].var]);
-            precondition.push_back(&propositions[pre_post[i].var][pre_post[i].pre]);
-        }
-    }
-    for (int i = 0; i < pre_post.size(); i++) {
-        assert(pre_post[i].var >= 0 && pre_post[i].var < g_variable_domain.size());
-        assert(pre_post[i].post >= 0 && pre_post[i].post < g_variable_domain[pre_post[i].var]);
-        Proposition *effect = &propositions[pre_post[i].var][pre_post[i].post];
-        const vector<Prevail> &eff_cond = pre_post[i].cond;
-        for (int j = 0; j < eff_cond.size(); j++) {
-            assert(eff_cond[j].var >= 0 && eff_cond[j].var < g_variable_domain.size());
-            assert(eff_cond[j].prev >= 0 && eff_cond[j].prev < g_variable_domain[eff_cond[j].var]);
-            precondition.push_back(&propositions[eff_cond[j].var][eff_cond[j].prev]);
-        }
-        unary_operators.push_back(UnaryOperator(precondition, effect, op_no, base_cost));
-        precondition.erase(precondition.end() - eff_cond.size(), precondition.end());
-    }
+Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {
+    int var = fact.get_variable().get_id();
+    int value = fact.get_value();
+    assert(in_bounds(var, propositions));
+    assert(in_bounds(value, propositions[var]));
+    return &propositions[var][value];
 }
 
-class hash_unary_operator {
-public:
-    size_t operator()(const pair<vector<Proposition *>, Proposition *> &key) const {
-        // NOTE: We used to hash the Proposition* values directly, but
-        // this had the disadvantage that the results were not
-        // reproducible. This propagates through to the heuristic
-        // computation: runs on different computers could lead to
-        // different initial h values, for example.
-
-        unsigned long hash_value = key.second->id;
-        const vector<Proposition *> &vec = key.first;
-        for (int i = 0; i < vec.size(); i++)
-            hash_value = 17 * hash_value + vec[i]->id;
-        return size_t(hash_value);
+void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op, int op_no) {
+    int base_cost = op.get_cost();
+    vector<Proposition *> precondition_props;
+    for (FactProxy precondition : op.get_preconditions()) {
+        precondition_props.push_back(get_proposition(precondition));
     }
-};
-
-
-static bool compare_prop_pointer(const Proposition *p1, const Proposition *p2) {
-    return p1->id < p2->id;
+    for (EffectProxy effect : op.get_effects()) {
+        Proposition *effect_prop = get_proposition(effect.get_fact());
+        EffectConditionsProxy eff_conds = effect.get_conditions();
+        for (FactProxy eff_cond : eff_conds) {
+            precondition_props.push_back(get_proposition(eff_cond));
+        }
+        unary_operators.push_back(UnaryOperator(precondition_props, effect_prop, op_no, base_cost));
+        precondition_props.erase(precondition_props.end() - eff_conds.size(), precondition_props.end());
+    }
 }
-
 
 void RelaxationHeuristic::simplify() {
     // Remove duplicate or dominated unary operators.
 
     /*
-      Algorithm: Put all unary operators into a hash_map
+      Algorithm: Put all unary operators into an unordered_map
       (key: condition and effect; value: index in operator vector.
       This gets rid of operators with identical conditions.
 
-      Then go through the hash_map, checking for each element if
-      none of the possible dominators are part of the hash_map.
+      Then go through the unordered_map, checking for each element if
+      none of the possible dominators are part of the unordered_map.
       Put the element into the new operator vector iff this is the case.
 
       In both loops, be careful to ensure that a higher-cost operator
@@ -128,13 +107,17 @@ void RelaxationHeuristic::simplify() {
     cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
 
     typedef pair<vector<Proposition *>, Proposition *> HashKey;
-    typedef hash_map<HashKey, int, hash_unary_operator> HashMap;
+    typedef unordered_map<HashKey, int> HashMap;
     HashMap unary_operator_index;
-    unary_operator_index.resize(unary_operators.size() * 2);
+    unary_operator_index.reserve(unary_operators.size());
 
-    for (int i = 0; i < unary_operators.size(); i++) {
+    for (size_t i = 0; i < unary_operators.size(); ++i) {
         UnaryOperator &op = unary_operators[i];
-        sort(op.precondition.begin(), op.precondition.end(), compare_prop_pointer);
+        sort(op.precondition.begin(), op.precondition.end(),
+             [] (const Proposition * p1, const Proposition * p2) {
+                 return p1->id < p2->id;
+             }
+             );
         HashKey key(op.precondition, op.effect);
         pair<HashMap::iterator, bool> inserted = unary_operator_index.insert(
             make_pair(key, i));
@@ -161,9 +144,9 @@ void RelaxationHeuristic::simplify() {
         int powerset_size = (1 << key.first.size()) - 1; // -1: only consider proper subsets
         bool match = false;
         if (powerset_size <= 31) { // HACK! Don't spend too much time here...
-            for (int mask = 0; mask < powerset_size; mask++) {
+            for (int mask = 0; mask < powerset_size; ++mask) {
                 HashKey dominating_key = make_pair(vector<Proposition *>(), key.second);
-                for (int i = 0; i < key.first.size(); i++)
+                for (size_t i = 0; i < key.first.size(); ++i)
                     if (mask & (1 << i))
                         dominating_key.first.push_back(key.first[i]);
                 HashMap::iterator found = unary_operator_index.find(

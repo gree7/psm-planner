@@ -1,60 +1,53 @@
 package cz.agents.dimap.tools;
 
-import java.io.Serializable;
+import cz.agents.dimap.tools.sas.Variable;
 
-/*
- * @author Karel Durkota
+import java.util.Objects;
+
+/**
+ * Created by pah on 12.8.15.
  */
-public class Pair<L, R> implements Serializable {
-    private static final long serialVersionUID = 6904760978429082792L;
+public class Pair<K, V> {
+    private final K key;
+    private final V value;
 
-    private final L left;
-    private final R right;
-
-    public Pair(L left, R right) {
-        this.left =left;
-        this.right = right;
+    public Pair(K key, V value) {
+        this.key = key;
+        this.value = value;
     }
 
-    public L getLeft() {
-        return this.left;
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Pair)) {
+            return false;
+        }
+        Pair<?, ?> p = (Pair<?, ?>) o;
+        return Objects.equals(p.getKey(), key) && Objects.equals(p.getValue(), value);
     }
 
-    public R getRight() {
-        return this.right;
-    }
+
+    /*@Override
+    public int hashCode() {
+        System.out.println(key == null);
+        System.out.println(value == null);
+        System.out.println(key.hashCode());
+        System.out.println(value.hashCode());
+        return (key == null ? 0 : key.hashCode()) ^ (value == null ? 0 : value.hashCode());
+    }*/
+
+
     @Override
     public int hashCode() {
-        return 31 * left.hashCode() + right.hashCode();
+        int result = key.hashCode();
+        result = 31 * result + value.hashCode();
+        return result;
     }
 
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (!(obj instanceof Pair))
-            return false;
-        Pair<Object, Object> other = (Pair<Object, Object>) obj;
-        if (left == null) {
-            if (other.left != null)
-                return false;
-        } else if (!left.equals(other.left))
-            return false;
-        if (right == null) {
-            if (other.right != null)
-                return false;
-        } else if (!right.equals(other.right))
-            return false;
-        return true;
+    public K getKey() {
+        return key;
     }
 
-    @Override
-    public String toString() {
-        return "<"+left.toString()+","+right.toString()+">";
+    public V getValue() {
+        return value;
     }
-
 }

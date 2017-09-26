@@ -1,13 +1,12 @@
 package experiments.ipc;
 
-import java.io.File;
-import java.io.IOException;
-
 import cz.agents.dimap.tools.GenericResult;
-import cz.agents.dimap.tools.pddl.PddlDomain;
-import cz.agents.dimap.tools.pddl.PddlProblem;
+
+import java.io.File;
 
 public abstract class IpcBenchmarksCli extends IpcBenchmarks {
+	
+	public static final double TIMEOUT_TOLERANCE = 0.98;
 
 	public void runExperimentCli(String[] args) {
 		if (args.length != 2) {
@@ -15,37 +14,37 @@ public abstract class IpcBenchmarksCli extends IpcBenchmarks {
 			System.err.println("usage: <prg> domain.pddl problem.pddl");
 			return;
 		}
-		
-		PddlDomain.INCLUDE_ACTION_PREFIXES = false;
 
-		File domainFile = new File(args[0]);
-		File problemFile = new File(args[1]);
-        String domainName = problemFile.getParentFile().getName();
-        String problemName = problemFile.getName().replaceFirst("[.][^.]+$", ""); // remove (last) extension ".ext"
-        System.out.printf("\n=== Running %s:%s ===\n", domainName, problemName);
-		
-        PddlProblem problem;
-		GenericResult result = new GenericResult();
-		try {
-			problem = new PddlProblem(domainFile.getPath(), problemFile.getPath());
-		} catch (IOException e) {
-			result.planningInfo = "PARSE ERROR: "+e.getMessage();
-			System.out.println(result.toString(domainName, problemName));
-			e.printStackTrace();
-			return;
-		}
+		runExperimentCli(new File(args[0]), new File(args[1]));
+	}
+
+	public void runExperimentCli(File domainFile, File problemFile) {
+        long startTime = System.currentTimeMillis();
+
+		String domainName = problemFile.getParentFile().getName();
+		String problemName = problemFile.getName().replaceFirst("[.][^.]+$", ""); // remove (last) extension ".ext"
+		System.out.printf("\n=== Running %s:%s ===\n", domainName, problemName);
+
+		GenericResult result = runExperiment(domainFile, problemFile);
+        long durationMs = System.currentTimeMillis() - startTime;
         
-        result = runExperiment(problem);
+        if (durationMs >= TIMEOUT_TOLERANCE * (TIMEOUT_MINUTES * 60 * 1000)) {
+        	result.solved = false;
+        	result.planningTime = durationMs;
+        	result.planningInfo = "timeout";
+        }
+        if (result.solved && Double.isNaN(result.planningTime)) {
+        	result.planningTime = durationMs;
+        }
         
 		System.out.println(result.toString(domainName, problemName));
 		printRuntimeStatistics();
 	}
 
 	private void printRuntimeStatistics() {
-		System.out.println("JVM total memory: "+Runtime.getRuntime().totalMemory()/(1024.0*1024)+" MB" );
-		System.out.println("JVM free memory: "+Runtime.getRuntime().freeMemory()/(1024.0*1024)+" MB" );
-		System.out.println("JVM max memory: "+Runtime.getRuntime().maxMemory()/(1024.0*1024)+" MB" );
-		System.out.println("JVM available processors: "+Runtime.getRuntime().availableProcessors());
+		System.out.println("JVM total memory: " + Runtime.getRuntime().totalMemory() / (1024.0 * 1024) + " MB");
+		System.out.println("JVM free memory: " + Runtime.getRuntime().freeMemory() / (1024.0 * 1024) + " MB");
+		System.out.println("JVM max memory: " + Runtime.getRuntime().maxMemory() / (1024.0 * 1024) + " MB");
+		System.out.println("JVM available processors: " + Runtime.getRuntime().availableProcessors());
 	}
-	
 }

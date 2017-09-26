@@ -1,0 +1,5 @@
+#! /bin/bash
+
+./stats.py $1 > $1.tex
+pdflatex $1.tex
+
