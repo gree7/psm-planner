@@ -1,14 +1,12 @@
 # PSM planner
 
 Authors:
-* Jan Tozicka (jan.tozicka@agents.fel.cvut.cz)
-* Jan Jakubuv (jan.jakubuv@agents.fel.cvut.cz)
-* Martin Svatos (svatoma1@fel.cvut.cz)
-* Antonin Komenda (antonin.komenda@fel.cvut.cz)
-
-This is version used during CoDMAP competition.
-It is not a release version and thus can contain bugs!
-In the case of any problems, please contact:
+* Jan Tozicka (jan.tozicka@agents.fel.cvut.cz) - planner
+* Jan Jakubuv (jan.jakubuv@agents.fel.cvut.cz) - planner
+* Martin Svatos (svatoma1@fel.cvut.cz) - reductions
+* Emirhan Ozsoy (emirhan.ozsoy@gmail.com) - SecreC set intersection
+* Michal Stolba (michal.stolba@agents.fel.cvut.cz) - privacy extension
+* Antonin Komenda (antonin.komenda@fel.cvut.cz) - principle
 
 Planner is described in the following articles:
 * Planner description without -D (internal dependencies reduction)
