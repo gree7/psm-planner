@@ -44,7 +44,7 @@ The file "settings.xml" is placed in ".m2" directory.
 
 If directory .m2 does not exist at you home directory, then you have to create new directory with name .m2
 
-You need to download file settings.xml from http://jones.felk.cvut.cz/redmine/attachments/download/71/settings.xml.
+You need to download file settings.xml from https://github.com/gree7/psm-planner/blob/master/settings.xml.
 * If file does not exist, then you can put there this file settings.xml.
 * If file exists, but is empty - <setting> element does not include some sub-element, then replace settings.xml file by this file settings.xml.
 * If file exist and <setting> element contains some sub-elements, then copy content of <setting> element from this file settings.xml.
