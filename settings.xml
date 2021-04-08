@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd" xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <servers>
+    <server>
+      <username>agent_student</username>
+      <password>\{DESede\}joKXl/ScCtHQI9TRjODLGg==</password>
+      <id>atg-repo</id>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <repositories>
+        <repository>
+          <snapshots>
+            <updatePolicy>always</updatePolicy>
+          </snapshots>
+          <releases />
+          <id>atg-repo</id>
+          <name>atg-repo</name>
+          <url>http://jones.felk.cvut.cz/artifactory/repo</url>
+        </repository>
+      </repositories>
+      <id>artifactory</id>
+    </profile>
+  </profiles>
+  <activeProfiles>
+    <activeProfile>artifactory</activeProfile>
+  </activeProfiles>
+</settings>
